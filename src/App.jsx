@@ -1,14 +1,41 @@
 import { useState } from 'react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 import './App.css';
 import { Chatbot } from './components/Chatbot';
 import User from './components/User';
 
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
+
 function App() {
   const [userInput, setUserInput] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  function handleChat(event) {
+  async function handleChat(event) {
     event.preventDefault();
+    const text = userInput.trim();
+    if (!text) return;
+
+    setUserInput('');
+    setMessages((prev) => [...prev, { role: 'user', text }]);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const result = await model.generateContent(text);
+      const response = result.response;
+      const reply = response.text();
+
+      setMessages((prev) => [...prev, { role: 'model', text: reply }]);
+    } catch (err) {
+      setError(err.message || 'Bir hata oluştu.');
+      setMessages((prev) => [...prev, { role: 'model', text: `Hata: ${err.message}` }]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleChange(event) {
@@ -31,24 +58,35 @@ function App() {
           style={{ minWidth: '100%', display: 'table' }}
         >
           <div className="max-h-[454px] overflow-auto">
-            {/* User Chat Message */}
-            <User text="fewafef" />
-            {/* Ai Chat Message */}
-            <Chatbot text="Sorry, I couldn't find any information in the documentation about that. Expect answer to be less accurateI could not find the answer to this in the verified sources." />
+            {messages.map((msg, i) =>
+              msg.role === 'user' ? (
+                <User key={i} text={msg.text} />
+              ) : (
+                <Chatbot key={i} text={msg.text} />
+              )
+            )}
+            {loading && (
+              <Chatbot text="..." />
+            )}
           </div>
         </div>
+        {error && (
+          <p className="text-xs text-red-500 py-1">{error}</p>
+        )}
         {/*input box */}
         <div className="flex items-center pt-0">
-          <form className="flex items-center justify-center w-full space-x-2">
+          <form className="flex items-center justify-center w-full space-x-2" onSubmit={handleChat}>
             <input
               className="flex h-10 w-full rounded-md border border-[#e5e7eb] px-3 py-2 text-sm placeholder-[#6b7280] focus:outline-none focus:ring-2 focus:ring-[#9ca3af] disabled:cursor-not-allowed disabled:opacity-50 text-[#030712] focus-visible:ring-offset-2"
               placeholder="Message Gemini"
               value={userInput}
               onChange={handleChange}
+              disabled={loading}
             />
             <button
+              type="submit"
               className="inline-flex items-center justify-center rounded-md text-sm font-medium text-[#f9fafb] disabled:pointer-events-none disabled:opacity-50 bg-black hover:bg-[#111827E6] h-10 px-4 py-2"
-              onClick={handleChat}
+              disabled={loading}
             >
               Send
             </button>
