@@ -26,9 +26,9 @@ export function Chatbot({ text }) {
           </svg>
         </div>
       </span>
-      <div className="leading-relaxed flex-1 min-w-0">
+      <div className="leading-relaxed flex-1 min-w-0 overflow-hidden break-words">
         <span className="block font-bold text-gray-700 mb-1">AI</span>
-        <div className="prose prose-sm prose-gray max-w-none">
+        <div className="prose prose-sm prose-gray max-w-none break-words">
           <ReactMarkdown
             components={{
               code({ node, inline, className, children, ...props }) {
@@ -38,13 +38,19 @@ export function Chatbot({ text }) {
                     style={oneDark}
                     language={match[1]}
                     PreTag="div"
-                    customStyle={{ margin: '0.5rem 0', borderRadius: '0.375rem', fontSize: '0.8125rem' }}
+                    customStyle={{
+                      margin: '0.5rem 0',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.8125rem',
+                      maxWidth: '100%',
+                      overflow: 'auto',
+                    }}
                     {...props}
                   >
                     {String(children).replace(/\n$/, '')}
                   </SyntaxHighlighter>
                 ) : (
-                  <code className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-800" {...props}>
+                  <code className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-800 break-all" {...props}>
                     {children}
                   </code>
                 );

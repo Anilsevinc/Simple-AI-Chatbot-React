@@ -20,7 +20,7 @@ export default function User({ text }) {
           </svg>
         </div>
       </span>
-      <p className="leading-relaxed">
+      <p className="leading-relaxed flex-1 min-w-0 break-words">
         <span className="block font-bold text-gray-700">You </span>
         {text}
       </p>

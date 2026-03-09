@@ -30,11 +30,8 @@ function App() {
         </div>
 
         {/* Chat container */}
-        <div
-          className="pr-4 h-[474px]"
-          style={{ minWidth: '100%', display: 'table' }}
-        >
-          <div className="max-h-[454px] overflow-auto">
+        <div className="flex flex-col flex-1 min-h-0 pr-4" style={{ height: '474px' }}>
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
             {messages.map((msg, i) =>
               msg.role === 'user' ? (
                 <User key={i} text={msg.text} />

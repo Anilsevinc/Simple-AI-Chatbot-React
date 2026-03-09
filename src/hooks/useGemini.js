@@ -17,14 +17,17 @@ export function useGemini() {
     setError(null);
 
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
       const result = await model.generateContent(trimmed);
       const response = result.response;
       const reply = response.text();
 
       setMessages((prev) => [...prev, { role: 'model', text: reply }]);
     } catch (err) {
-      const errMsg = err.message || 'Bir hata oluştu.';
+      const isQuota = err.message?.includes('429') || err.message?.includes('quota');
+      const errMsg = isQuota
+        ? 'Kota aşıldı. Lütfen birkaç dakika sonra tekrar deneyin.'
+        : (err.message || 'Bir hata oluştu.');
       setError(errMsg);
       setMessages((prev) => [...prev, { role: 'model', text: `Hata: ${errMsg}` }]);
     } finally {
