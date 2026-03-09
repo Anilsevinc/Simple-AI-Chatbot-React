@@ -1,46 +1,23 @@
 import { useState } from 'react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 import './App.css';
 import { Chatbot } from './components/Chatbot';
 import User from './components/User';
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
+import { useGemini } from './hooks/useGemini';
 
 function App() {
   const [userInput, setUserInput] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { messages, loading, error, sendMessage } = useGemini();
 
-  async function handleChat(event) {
+  function handleChat(event) {
     event.preventDefault();
-    const text = userInput.trim();
-    if (!text) return;
-
+    if (!userInput.trim()) return;
+    sendMessage(userInput);
     setUserInput('');
-    setMessages((prev) => [...prev, { role: 'user', text }]);
-    setLoading(true);
-    setError(null);
-
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-      const result = await model.generateContent(text);
-      const response = result.response;
-      const reply = response.text();
-
-      setMessages((prev) => [...prev, { role: 'model', text: reply }]);
-    } catch (err) {
-      setError(err.message || 'Bir hata oluştu.');
-      setMessages((prev) => [...prev, { role: 'model', text: `Hata: ${err.message}` }]);
-    } finally {
-      setLoading(false);
-    }
   }
 
   function handleChange(event) {
-    const { value } = event.target;
-    setUserInput(value);
+    setUserInput(event.target.value);
   }
 
   return (
